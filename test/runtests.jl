@@ -1,6 +1,11 @@
 using Flowstar
 using Test
 
+models = filter(x->endswith(x, ".model"), readdir(abspath("models"); join = true))
+
 @testset "Flowstar.jl" begin
-    # Write your tests here.
+    for m in models
+        joinpath(pwd(), m)
+       flowstar(joinpath(pwd(), m))
+    end
 end

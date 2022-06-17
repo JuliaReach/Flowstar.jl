@@ -112,6 +112,7 @@ m|> length
 
 
 # model = joinpath(@__DIR__, "gerlach.model")
+<<<<<<< HEAD
 
 # S = flowstar(model)
 Sheader, Slocal, Sbody = split(S, "{", limit = 3)
@@ -136,3 +137,24 @@ P[1][2]  # time horizon 1, state 2
 # P[1][2]  # time horizon 1, state 2
 
 ## ADD PARSE FUNCTIONS, NEEDS FlowstarSolution struct -> parse string into header and flowpipe???
+=======
+
+# S = flowstar(model)
+Sheader, Slocal, Sbody = split(S, "{", limit = 3)
+
+split(Sbody, "{")
+
+
+fph = parse(FlowpipeHeader, Sheader)
+
+local_vars = ["local_t"; split(Flowstar.match_between(Slocal, "tm var "), ",")]
+# P = Flowstar._parse2(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 50)
+P = Flowstar._parse3(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 5)
+
+P[end][1](rand(3))
+
+
+model2 = joinpath(@__DIR__,"..","test","models","lv.model")
+flowstar(model2)
+
+>>>>>>> 8bc054e (initial parsing to TaylorModelN)

@@ -19,10 +19,14 @@ Flowstar.x
 
 P = Flowstar._parse2(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 3)
 
-<<<<<<< HEAD
-P[end][1]([0.002, 1.0, 1.0])
-=======
->>>>>>> 88f16b3 (initial parsing)
+# <<<<<<< HEAD
+# <<<<<<< HEAD
+# P[end][1]([0.002, 1.0, 1.0])
+# =======
+# >>>>>>> 88f16b3 (initial parsing)
+# =======
+# P[end][1]([0.002, 1.0, 1.0])
+# >>>>>>> 25b98a8 (faster parsing by using eval with set_variables included in the eval)
 
 # Parse Body
 body = split(Sbody, "{")

@@ -11,6 +11,7 @@ function flowstar(model; outdir = mktempdir())
     cmd = Cmd(`$(flowstar())`; dir = outdir)
     run(pipeline(model, cmd))
 
+    @info "Flow* intermediate files saved to $outdir"
     flow = first(filter(x->endswith(x,".flow"), readdir(joinpath(outdir, "outputs"), join = true)))
     String(read(flow))
 end
@@ -59,7 +60,6 @@ function _parse(str, order, numvars, lvars; names = "ξ")
     # local_t, local_var_1, local_var_2 = set_variables(names; order, numvars)
     ex = Meta.parse(body[1])
 
-    _build_and_inject_function(@__MODULE__, ex)
     # eval(ex)
 
     # @show local_t
@@ -68,7 +68,7 @@ end
 function _parse2(str, order, numvars, vars, lvars, idx; names = "ξ")
     ξ = set_variables(names; order, numvars)
 
-    body = split(str, "{")
+    body = split(str, "{")[idx:idx+1]
 
     res = map(body) do b
         s= split(b, "\n\n\n")[1]
@@ -84,12 +84,74 @@ function _parse2(str, order, numvars, vars, lvars, idx; names = "ξ")
         "function _fp(ξ); $(s); return [$(join(vars, ","))]; end"
     end
 
-    map(res, 1:length(res)) do r, idx
+    taylor = map(res, 1:length(res)) do r, idx
         @show idx
         ex = Meta.parse(r)
         _f = @RuntimeGeneratedFunction(ex)
         _f(ξ)
     end
+
+    box = map(body) do b
+        s = split(b, "\n\n\n")[2]
+        s = replace(s, "}"=>"") |> strip
+        s = replace(s, "[" => "(")
+        s = replace(s, "]" => ")")
+        s = replace(s, "," => "..")
+        for lv in lvars[2:end]
+            s = replace(s, "\n$lv in" =>",")
+        end
+        s = replace(s, "$(lvars[1]) in" => "IntervalBox(")
+        s = s*")"
+        ex = Meta.parse(s)
+        eval(ex)
+    end
+
+
+end
+
+function _parse3(str, order, numvars, vars, lvars, idx; names = "ξ")
+    # ξ = set_variables(names; order, numvars)
+
+    body = split(str, "{")
+
+    res = map(body) do b
+        s= split(b, "\n\n\n")[1]
+        s = replace.(s, "}"=>"")
+        s = strip.(s)
+        s = replace.(s, "\n" => ";")
+        s = replace.(s, "[" => "(")
+        s = replace.(s, "]" => ")")
+        s = replace.(s, "," => "..")
+        for (idx,lv) in enumerate(lvars)
+            s = replace(s, "$lv" =>"ξ[$idx]")
+        end
+        "ξ = set_variables(\"$names\"; order = $order, numvars = $numvars); $(s);  [$(join(vars, ","))]"
+    end
+
+    taylor = map(res, 1:length(res)) do r, idx
+        @show idx
+        ex = Meta.parse(r)
+        # _f = @RuntimeGeneratedFunction(ex)
+        # _f(ξ)
+        eval(ex)
+    end
+
+    box = map(body) do b
+        s = split(b, "\n\n\n")[2]
+        s = replace(s, "}"=>"") |> strip
+        s = replace(s, "[" => "(")
+        s = replace(s, "]" => ")")
+        s = replace(s, "," => "..")
+        for lv in lvars[2:end]
+            s = replace(s, "\n$lv in" =>",")
+        end
+        s = replace(s, "$(lvars[1]) in" => "IntervalBox(")
+        s = s*")"
+        ex = Meta.parse(s)
+        eval(ex)
+    end
+
+    taylor, box
 end
 
 

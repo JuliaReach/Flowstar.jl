@@ -19,6 +19,7 @@ Flowstar.x
 
 P = Flowstar._parse2(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 3)
 
+P[end][1]([0.002, 1.0, 1.0])
 
 # Parse Body
 body = split(Sbody, "{")
@@ -101,3 +102,11 @@ re = r"\{([^{}]+)\}"
 m=eachmatch(re, S) |> collect;
 
 m|> length
+
+
+model = joinpath(@__DIR__, "gerlach.model")
+
+flowstar(model)
+
+model2 = joinpath(@__DIR__,"..","test","models","lv.model")
+flowstar(model2)

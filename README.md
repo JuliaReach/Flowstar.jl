@@ -1,5 +1,7 @@
 # Flowstar.jl
 
+[![Build Status](https://github.com/agerlach/Flowstar.jl/workflows/CI/badge.svg)](https://github.com/agerlach/Flowstar.jl/actions?query=workflow%3ACI)
+
 This package is a wrapper to [Flow*](flowstar.org), a verification tool for cyber-physical systems.
 
 It is a WIP. 

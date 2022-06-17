@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'LICENSE'
+      - 'README.md'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    tags: '*'
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ['1.7'] # , 'nightly']
+        julia-arch: [x64]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    env:
+      JULIA_PKG_SERVER: ''
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ matrix.julia-version }}
+          arch: ${{ matrix.julia-arch }}
+      - name: Cache artifacts
+        uses: julia-actions/cache@v1
+      - name: Build package
+        uses: julia-actions/julia-buildpkg@v1
+        #continue-on-error: ${{ matrix.julia-version == 'nightly' }}
+      - name: Run tests
+        uses: julia-actions/julia-runtest@v1
+        #continue-on-error: ${{ matrix.julia-version == 'nightly' }}
+      # - name: Process coverage
+      #   uses: julia-actions/julia-processcoverage@v1
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     files: lcov.info

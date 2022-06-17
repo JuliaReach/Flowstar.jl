@@ -46,6 +46,7 @@ nstates(fp::FlowpipeHeader) = length(states(fp))
 order(fp::FlowpipeHeader) = fp.order
 cutoff(fp::FlowpipeHeader) = fp.cutoff
 
+<<<<<<< HEAD
 
 function _split_states(str)
     split(str,";", keepempty = false)
@@ -103,6 +104,52 @@ function _parse3(str, order, numvars, vars, lvars, idx; names = "ξ")
 
              TaylorModelN(pol, rem, IntervalBox(zeros(numvars)), dom)
         end
+=======
+function _parse(str, order, numvars, lvars; names = "ξ")
+    body = split(str, "{")
+    body = replace.(body, "}"=>"")
+    body = strip.(body)
+    body = replace.(body, "\n" => ";")
+    body = replace.(body, "[" => "(")
+    body = replace.(body, "]" => ")")
+    body = replace.(body, "," => "..")
+    body = replace.(body, " in" =>"δ =")
+
+
+    # local_t, local_var_1, local_var_2 = set_variables(names; order, numvars)
+    ex = Meta.parse(body[1])
+
+    _build_and_inject_function(@__MODULE__, ex)
+    # eval(ex)
+
+    # @show local_t
+end
+
+function _parse2(str, order, numvars, vars, lvars, idx; names = "ξ")
+    ξ = set_variables(names; order, numvars)
+
+    body = split(str, "{")
+
+    res = map(body) do b
+        s= split(b, "\n\n\n")[1]
+        s = replace.(s, "}"=>"")
+        s = strip.(s)
+        s = replace.(s, "\n" => ";")
+        s = replace.(s, "[" => "(")
+        s = replace.(s, "]" => ")")
+        s = replace.(s, "," => "..")
+        for (idx,lv) in enumerate(lvars)
+            s = replace(s, "$lv" =>"ξ[$idx]")
+        end
+        "function _fp(ξ); $(s); return [$(join(vars, ","))]; end"
+    end
+
+    map(res, 1:length(res)) do r, idx
+        @show idx
+        ex = Meta.parse(r)
+        _f = @RuntimeGeneratedFunction(ex)
+        _f(ξ)
+>>>>>>> 88f16b3 (initial parsing)
     end
 end
 

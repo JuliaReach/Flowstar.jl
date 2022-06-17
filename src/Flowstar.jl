@@ -8,13 +8,15 @@ import Base: parse
 
 include("string_utils.jl")
 
-function flowstar(model)
-    outdir = mktempdir()
+function flowstar(model; outdir = mktempdir())
+    output_name = _match_between(String(read(model)), "output ")*".flow"
+
     cmd = Cmd(`$(flowstar())`; dir = outdir)
     run(pipeline(model, cmd))
 
     @info "Flow* intermediate files saved to $outdir"
-    flow = first(filter(x->endswith(x,".flow"), readdir(joinpath(outdir, "outputs"), join = true)))
+    flow = joinpath(outdir, "outputs", output_name)
+    
     String(read(flow))
 end
 

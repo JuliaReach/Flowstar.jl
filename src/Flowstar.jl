@@ -46,100 +46,39 @@ nstates(fp::FlowpipeHeader) = length(states(fp))
 order(fp::FlowpipeHeader) = fp.order
 cutoff(fp::FlowpipeHeader) = fp.cutoff
 
-function _parse(str, order, numvars, lvars; names = "ξ")
-    body = split(str, "{")
-    body = replace.(body, "}"=>"")
-    body = strip.(body)
-    body = replace.(body, "\n" => ";")
-    body = replace.(body, "[" => "(")
-    body = replace.(body, "]" => ")")
-    body = replace.(body, "," => "..")
-    body = replace.(body, " in" =>"δ =")
-
-
-    # local_t, local_var_1, local_var_2 = set_variables(names; order, numvars)
-    ex = Meta.parse(body[1])
-
-    # eval(ex)
-
-    # @show local_t
-end
-
-function _parse2(str, order, numvars, vars, lvars, idx; names = "ξ")
-    ξ = set_variables(names; order, numvars)
-
-    body = split(str, "{")[idx:idx+1]
-
-    res = map(body) do b
-        s= split(b, "\n\n\n")[1]
-        s = replace.(s, "}"=>"")
-        s = strip.(s)
-        s = replace.(s, "\n" => ";")
-        s = replace.(s, "[" => "(")
-        s = replace.(s, "]" => ")")
-        s = replace.(s, "," => "..")
-        for (idx,lv) in enumerate(lvars)
-            s = replace(s, "$lv" =>"ξ[$idx]")
-        end
-        "function _fp(ξ); $(s); return [$(join(vars, ","))]; end"
-    end
-
-    taylor = map(res, 1:length(res)) do r, idx
-        @show idx
-        ex = Meta.parse(r)
-        _f = @RuntimeGeneratedFunction(ex)
-        _f(ξ)
-    end
-    
-
-    box = map(body) do b
-        s = split(b, "\n\n\n")[2]
-        s = replace(s, "}"=>"") |> strip
-        s = replace(s, "[" => "(")
-        s = replace(s, "]" => ")")
-        s = replace(s, "," => "..")
-        for lv in lvars[2:end]
-            s = replace(s, "\n$lv in" =>",")
-        end
-        s = replace(s, "$(lvars[1]) in" => "IntervalBox(")
-        s = s*")"
-        ex = Meta.parse(s)
-        eval(ex)
-    end
-
-
-end
 
 function _split_states(str)
     split(str,";", keepempty = false)
 end
 
+function _intervalstr(str)
+    str = replace(str, "[" => "(")
+    str = replace(str, "]" => ")")
+    str = replace(str, "," => "..")
+    str
+end
+
 function _cleantm(str, lvars)
-    tstr, istr = split(str, "\n\n\n")
+    tm_str, dom_str = split(str, "\n\n\n")
 
-    tstr = replace(tstr, "}"=>"")
-    tstr = strip(tstr)
-    tstr = replace.(tstr, "\n" => ";")
-    tstr = replace.(tstr, "[" => "(")
-    tstr = replace.(tstr, "]" => ")")
-    tstr = replace.(tstr, "," => "..")
+    tm_str = replace(tm_str, "}"=>"")
+    tm_str = strip(tm_str)
+    tm_str = replace.(tm_str, "\n" => ";")
+    tm_str = _intervalstr(tm_str)
     for (idx,lv) in enumerate(lvars)
-        tstr = replace(tstr, "$lv" =>"ξ[$idx]")
+        tm_str = replace(tm_str, "$lv" =>"ξ[$idx]")
     end
 
-
-    istr = replace(istr, "}"=>"")
-    istr = strip(istr)
-    istr = replace(istr, "[" => "(")
-    istr = replace(istr, "]" => ")")
-    istr = replace(istr, "," => "..")
+    dom_str = replace(dom_str, "}"=>"")
+    dom_str = strip(dom_str)
+    dom_str = _intervalstr(dom_str)
     for lv in lvars[2:end]
-        istr = replace(istr, "\n$lv in" =>",")
+        dom_str = replace(dom_str, "\n$lv in" =>",")
     end
-    istr = replace(istr, "$(lvars[1]) in" => "IntervalBox(")
-    istr = istr*")"
+    dom_str = replace(dom_str, "$(lvars[1]) in" => "IntervalBox(")
+    dom_str = dom_str*")"
 
-    tstr, istr
+    tm_str, dom_str
 end
 
 function _split_poly_rem(str)
@@ -147,9 +86,8 @@ function _split_poly_rem(str)
     str[1:idx-1], str[idx+1:end]
 end
 
-
 function _parse3(str, order, numvars, vars, lvars, idx; names = "ξ")
-    ξ = eval(Meta.parse("ξ = set_variables(\"$names\"; order = $order, numvars = $numvars)"))
+    ξ = eval(:(ξ = set_variables($names; order= $order, numvars = $numvars)))
 
     body = split(str, "{")
 

@@ -1,0 +1,30 @@
+continuous reachability
+{
+ state var x,y
+
+ setting
+ {
+  fixed steps 0.02
+  time 2
+  remainder estimation 1e-5
+  QR precondition
+  gnuplot octagon x,y
+  adaptive orders { min 4 , max 10 }
+  cutoff 1e-20
+  precision 53
+  output Simple
+  print on
+ }
+
+ poly ode 2
+ {
+  x' = x - x^3
+  y' = 0
+ }
+
+ init
+ {
+  x in [0.1 , 0.9]
+  y in [0.1 , 0.2]
+ }
+}

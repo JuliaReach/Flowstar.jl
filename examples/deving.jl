@@ -120,6 +120,12 @@ P = Flowstar._parse3(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 
 
 P[1][2]  # time horizon 1, state 2
 
-model2 = joinpath(@__DIR__,"..","test","models","lv.model")
-flowstar(model2)
+# model2 = joinpath(@__DIR__,"..","test","models","lv.model")
+# S =flowstar(model2)
+# Sheader, Slocal, Sbody = split(S, "{", limit = 3)
+# fph = parse(FlowpipeHeader, Sheader)
+# P = Flowstar._parse3(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 5);
 
+# P[1][2]  # time horizon 1, state 2
+
+## ADD PARSE FUNCTIONS, NEEDS FlowstarSolution struct -> parse string into header and flowpipe???

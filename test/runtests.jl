@@ -1,10 +1,10 @@
 using Flowstar
 using Test
 
-models = filter(x->endswith(x, ".model"), readdir(abspath("models"); join = true))
 
 @testset "Flowstar.jl" begin
-    model = joinpath(abspath("models"), "lv.model")
-    output = String(read(joinpath(abspath("models"),"lv.flow")))
-    @test output == flowstar(model)
+    model = joinpath(abspath("models"), "Lotka_Volterra.model")
+    # output = String(read(joinpath(abspath("models"),"lv.flow")))
+    S = flowstar(model; outdir = pwd())
+    @test S ==  String(read(joinpath(pwd(),"outputs","Lotka_Volterra.flow")))
 end

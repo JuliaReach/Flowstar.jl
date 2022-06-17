@@ -13,4 +13,4 @@ FS1 =  parse(FlowstarContinuousSolution, S)
 FS2 = FlowstarContinuousSolution(model)
 
 fp = flowpipe(FS2)
-tm = FP[end][1]  # final set, state 1
+tm = fp[end][1]  # final set, state 1

@@ -211,7 +211,7 @@ end
 function _parse3(str, order, numvars, vars, lvars, idx; names = "ξ")
     ξ = eval(Meta.parse("ξ = set_variables(\"$names\"; order = $order, numvars = $numvars)"))
 
-    body = split(str, "{")[idx:idx+1]
+    body = split(str, "{")
 
     map(body) do b
         tm, dom = _cleantm(b, lvars)

@@ -1,6 +1,6 @@
 module Flowstar
 
-using Flowstar_jll, TaylorModels, RuntimeGeneratedFunctions
+using Flowstar_jll, TaylorModels, RuntimeGeneratedFunctions, ProgressLogging
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
 import Flowstar_jll: flowstar
@@ -90,6 +90,7 @@ function _parse2(str, order, numvars, vars, lvars, idx; names = "ξ")
         _f = @RuntimeGeneratedFunction(ex)
         _f(ξ)
     end
+    
 
     box = map(body) do b
         s = split(b, "\n\n\n")[2]
@@ -109,49 +110,62 @@ function _parse2(str, order, numvars, vars, lvars, idx; names = "ξ")
 
 end
 
+function _split_states(str)
+    split(str,";", keepempty = false)
+end
+
+function _cleantm(str, lvars)
+    tstr, istr = split(str, "\n\n\n")
+
+    tstr = replace(tstr, "}"=>"")
+    tstr = strip(tstr)
+    tstr = replace.(tstr, "\n" => ";")
+    tstr = replace.(tstr, "[" => "(")
+    tstr = replace.(tstr, "]" => ")")
+    tstr = replace.(tstr, "," => "..")
+    for (idx,lv) in enumerate(lvars)
+        tstr = replace(tstr, "$lv" =>"ξ[$idx]")
+    end
+
+
+    istr = replace(istr, "}"=>"")
+    istr = strip(istr)
+    istr = replace(istr, "[" => "(")
+    istr = replace(istr, "]" => ")")
+    istr = replace(istr, "," => "..")
+    for lv in lvars[2:end]
+        istr = replace(istr, "\n$lv in" =>",")
+    end
+    istr = replace(istr, "$(lvars[1]) in" => "IntervalBox(")
+    istr = istr*")"
+
+    tstr, istr
+end
+
+function _split_poly_rem(str)
+    idx = findlast('+', str)
+    str[1:idx-1], str[idx+1:end]
+end
+
+
 function _parse3(str, order, numvars, vars, lvars, idx; names = "ξ")
-    # ξ = set_variables(names; order, numvars)
+    ξ = eval(Meta.parse("ξ = set_variables(\"$names\"; order = $order, numvars = $numvars)"))
 
-    body = split(str, "{")
+    body = split(str, "{")[idx:idx+1]
 
-    res = map(body) do b
-        s= split(b, "\n\n\n")[1]
-        s = replace.(s, "}"=>"")
-        s = strip.(s)
-        s = replace.(s, "\n" => ";")
-        s = replace.(s, "[" => "(")
-        s = replace.(s, "]" => ")")
-        s = replace.(s, "," => "..")
-        for (idx,lv) in enumerate(lvars)
-            s = replace(s, "$lv" =>"ξ[$idx]")
+    map(body) do b
+        tm, dom = _cleantm(b, lvars)
+        dom = eval(Meta.parse(dom))
+        states = _split_states(tm)
+        
+        polrem = map(states) do state
+             pol, rem = _split_poly_rem(state)
+             pol = eval(Meta.parse(pol))
+             rem = eval(Meta.parse(rem))
+
+             TaylorModelN(pol, rem, IntervalBox(zeros(numvars)), dom)
         end
-        "ξ = set_variables(\"$names\"; order = $order, numvars = $numvars); $(s);  [$(join(vars, ","))]"
     end
-
-    taylor = map(res, 1:length(res)) do r, idx
-        @show idx
-        ex = Meta.parse(r)
-        # _f = @RuntimeGeneratedFunction(ex)
-        # _f(ξ)
-        eval(ex)
-    end
-
-    box = map(body) do b
-        s = split(b, "\n\n\n")[2]
-        s = replace(s, "}"=>"") |> strip
-        s = replace(s, "[" => "(")
-        s = replace(s, "]" => ")")
-        s = replace(s, "," => "..")
-        for lv in lvars[2:end]
-            s = replace(s, "\n$lv in" =>",")
-        end
-        s = replace(s, "$(lvars[1]) in" => "IntervalBox(")
-        s = s*")"
-        ex = Meta.parse(s)
-        eval(ex)
-    end
-
-    taylor, box
 end
 
 

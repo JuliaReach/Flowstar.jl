@@ -104,9 +104,23 @@ m=eachmatch(re, S) |> collect;
 m|> length
 
 
-model = joinpath(@__DIR__, "gerlach.model")
+# model = joinpath(@__DIR__, "gerlach.model")
 
-flowstar(model)
+# S = flowstar(model)
+Sheader, Slocal, Sbody = split(S, "{", limit = 3)
+
+split(Sbody, "{")
+
+
+fph = parse(FlowpipeHeader, Sheader)
+
+local_vars = ["local_t"; split(Flowstar.match_between(Slocal, "tm var "), ",")]
+# P = Flowstar._parse2(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 50)
+P = Flowstar._parse3(Sbody, order(fph), nstates(fph)+1,states(fph), local_vars, 5)
+
+P[end][1](rand(3))
+
 
 model2 = joinpath(@__DIR__,"..","test","models","lv.model")
 flowstar(model2)
+

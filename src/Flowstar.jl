@@ -1,7 +1,6 @@
 module Flowstar
 
-using Flowstar_jll, TaylorModels, RuntimeGeneratedFunctions, ProgressLogging
-RuntimeGeneratedFunctions.init(@__MODULE__)
+using Flowstar_jll, TaylorModels
 
 import Flowstar_jll: flowstar
 import Base: parse

@@ -1,6 +1,6 @@
 using Pkg; cd(@__DIR__); Pkg.activate("..")
 
-using Flowstar, TaylorModels, ReadableRegex
+using Flowstar, TaylorModels
 
 # Read *.flow file
 model = joinpath(abspath("../test/models"),"lv.model")

@@ -7,17 +7,20 @@ model = joinpath(@__DIR__, "simple.model")
 
 # Read string and parse into FlowstarContinuousSolution
 S = flowstar(model)
+
+## TaylorModel1{TaylorN}
 FS1 =  parse(FlowstarContinuousSolution, S)
+typeof(FS1)
+
+## TaylorModelN
+FS2 = parse(FlowstarContinuousSolution, S, Val(false))
+typeof(FS2)
 
 # Direct Constructor
-FS2 = FlowstarContinuousSolution(model)
+## TaylorModel1{TaylorN}
+FS3 = FlowstarContinuousSolution(model)
+typeof(FS3)
 
-fp = flowpipe(FS2)
-tm = fp[end][1]  # final set, state 1
-
-## parse string into TaylorModel1{TaylorN{Interval{Float64}}, Float64}
-FS3 = parse(FlowstarContinuousSolution, S, Val(true))
-
-tm1 = FS3[end][1]
-eval_t = mid(domain(tm1))
-tm1(eval_t)
+## TaylorModelN
+FS4 = FlowstarContinuousSolution(model, Val(false))
+typeof(FS4)

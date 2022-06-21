@@ -40,7 +40,6 @@ cutoff(fs::FlowstarContinuousSolution) = fs.cutoff
 flowpipe(fs::FlowstarContinuousSolution) = fs.flow
 domain(fs::FlowstarContinuousSolution) = domain(flowpipe(fs)[1][1])
 
-
 function parse(::Type{FlowstarContinuousSolution}, str, tm1 = Val(true); kwargs...)
     _valid_file(str)
     head_str, local_str, body_str = split(str, "{", limit = 3)

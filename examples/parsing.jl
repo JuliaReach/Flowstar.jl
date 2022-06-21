@@ -1,6 +1,8 @@
-using Pkg; cd(@__DIR__); Pkg.activate("..")
+# using Pkg; cd(@__DIR__); Pkg.activate("..")
 
+using ReachabilityAnalysis
 using Flowstar, TaylorModels
+
 
 # Read *.flow file
 model = joinpath(@__DIR__, "simple.model")
@@ -24,3 +26,13 @@ typeof(FS3)
 ## TaylorModelN
 FS4 = FlowstarContinuousSolution(model, Val(false))
 typeof(FS4)
+
+FS3 # note, b/c TaylorN requires setting a global with numvars, FS3 isn't valid after calling Val(false)
+
+
+## RA Experiments
+
+FS3 = FlowstarContinuousSolution(model)
+fp = Flowstar.flowpipe(FS3) 
+dom_t = Flowstar.domain(FS3)
+rs = TaylorModelReachSet(getindex.(fp,1), dom_t)

@@ -1,6 +1,6 @@
 module Flowstar
 
-using Flowstar_jll, TaylorModels
+using Flowstar_jll, TaylorModels, TypedPolynomials
 
 import Flowstar_jll: flowstar
 import TaylorModels: flowpipe
@@ -54,6 +54,44 @@ function parse(::Type{FlowstarContinuousSolution}, str; kwargs...)
     
     fp = _parse_flowpipe(body_str, order, vars, local_vars; names)
     FlowstarContinuousSolution(vars, order, cutoff, output, local_vars, fp)
+end
+
+function parse(::Type{FlowstarContinuousSolution}, str, ::Val{true}; kwargs...)
+    _valid_file(str)
+    head_str, local_str, body_str = split(str, "{", limit = 3)
+
+    vars, order, cutoff, output = _parse_header(head_str)
+    local_vars = _parse_locals(local_str, )
+
+    tstates = !any(vars.=="t") ? ["t"; vars] : vars
+    names = join(tstates, " ")
+
+    lvars = local_vars
+    nvars = length(vars) + 1
+    ξ = eval(:(@polyvar ξ[1:$nvars]))
+    ξtm = eval(:(set_variables($(join(vars, " ")); order= $order, numvars = $(length(nvars)))))
+
+    body = split(body_str, "{")
+    map(body) do b
+        _tm, _dom = _cleantm(b, lvars)
+        dom = eval(Meta.parse(_dom))
+        states = _split_states(_tm)
+        
+        polrem = map(states) do state
+             pol, rem = _split_poly_rem(state)
+             rem = eval(Meta.parse(rem))
+             pol =  eval(Meta.parse(pol))
+             coeffs = map(order:-1:1) do n
+                c = TypedPolynomials.coefficient(pol, ξ[1]^n, [ξ[1]])
+                c(ξ[1]=>0.0, ξ[2:end] => ξtm)
+             end
+             ts = Taylor1(coeffs)
+ 
+             TaylorModel1(ts, rem, 0.0..0.0, dom[1])
+        end
+    end
+
+
 end
 
 function _parse_header(str)

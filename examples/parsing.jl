@@ -3,7 +3,6 @@
 using ReachabilityAnalysis
 using Flowstar, TaylorModels
 
-
 # Read *.flow file
 model = joinpath(@__DIR__, "simple.model")
 
@@ -26,7 +25,8 @@ typeof(FS3)
 ## TaylorModelN
 FS4 = FlowstarContinuousSolution(model, Val(false))
 typeof(FS4)
-
+fp2 = Flowstar.flowpipe(FS4)
+fp2[end][2]
 FS3 # note, b/c TaylorN requires setting a global with numvars, FS3 isn't valid after calling Val(false)
 
 
@@ -36,3 +36,4 @@ FS3 = FlowstarContinuousSolution(model)
 fp = Flowstar.flowpipe(FS3) 
 dom_t = Flowstar.domain(FS3)
 rs = TaylorModelReachSet(getindex.(fp,1), dom_t)
+

@@ -82,14 +82,14 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
         states = _split_states(_tm)
         
         polrem = map(states) do state
-             pol, rem = _split_poly_rem(state)
-             rem = eval(Meta.parse(rem))
-             pol =  eval(Meta.parse(pol))
-             coeffs = map(order:-1:1) do n  # note iterating in reverse to match coefficient order of Taylor1
+            pol, rem = _split_poly_rem(state)
+            rem = eval(Meta.parse(rem))
+            pol =  eval(Meta.parse(pol))
+            coeffs = map(0:order) do n 
                 coeff = TypedPolynomials.coefficient(pol, ξ[1]^n, [ξ[1]])
                 coeff(ξ[1]=>0.0, ξ[2:end] => ξtm)  # coeff is independent of ξ[1], but required for type conversion
-             end
-             TaylorModel1(Taylor1(coeffs), rem, 0.0..0.0, dom[1])
+            end
+            TaylorModel1(Taylor1(coeffs), rem, 0.0..0.0, dom[1])
         end
     end
 end
@@ -119,11 +119,9 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
 end
 
 
-
 function _valid_file(s)
     @assert occursin("continuous flowpipes", s) "Currently only continuous flowpipe solutions are supported"
 end
 
 export flowstar,  FlowstarContinuousSolution, states, nstates, order, cutoff, flowpipe, domain
 end
-

@@ -5,7 +5,11 @@ model = joinpath(abspath("models"), "Lotka_Volterra.model")
 S = flowstar(model; outdir = pwd())
 
 @testset "Flow* Call" begin
-    @test S ==  String(read(joinpath(pwd(),"outputs","Lotka_Volterra.flow")))
+    outdir = mktempdir(;cleanup = false)
+    outfile = joinpath(outdir,"outputs","Lotka_Volterra.flow")
+    S = flowstar(model; outdir)
+    @test isfile(outfile)
+    @test S == String(read(outfile)) 
 end
 
 @testset "TaylorModelN vs TaylorModel1{TaylorN} parsing" begin

@@ -13,7 +13,7 @@ continuous reachability
   cutoff 1e-20
   precision 53
   output Lotka_Volterra
-  print on
+  print off
  }
 
  poly ode 2

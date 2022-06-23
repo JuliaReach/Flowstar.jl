@@ -4,7 +4,6 @@ authors = ["Adam R. Gerlach and Contributors"]
 version = "0.2.0"
 
 [deps]
-ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
 Flowstar_jll = "857d554b-2109-5851-8b71-fc429cd15c15"
 TaylorModels = "314ce334-5f6e-57ae-acf6-00b6e903104a"
 TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"

@@ -6,10 +6,6 @@ function _match_between(s::AbstractString, left, right = "\\n\\r")
     m.match
 end
 
-function _split_states(str)
-    split(str,";", keepempty = false)
-end
-
 function _intervalstr(str)
     str = replace(str, "[" => "(")
     str = replace(str, "]" => ")")

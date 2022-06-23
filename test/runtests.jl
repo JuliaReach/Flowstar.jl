@@ -17,9 +17,11 @@ end
     eval_pt = mid(domain(fcs_tmN))
 
     tmN = flowpipe(fcs_tmN)[end][1](eval_pt)
+    @test length(flowpipe(fcs_tmN)[end]) == 2
 
     fcs_tm1 = FlowstarContinuousSolution(model, Val(true))
     tm1 = flowpipe(fcs_tm1)[end][1](eval_pt[1])(eval_pt[2:end])
+    @test length(flowpipe(fcs_tm1)[end]) == 2
 
     @test tmN == tm1
 end

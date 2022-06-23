@@ -56,21 +56,22 @@ struct FlowstarSetting{𝕋, 𝕆<:AbstractTMOrder, ℙ<:AbstractPreconditioner}
     name::String
     rem_est::Float64
     precond::ℙ
-    plot_states::String
     cutoff::Float64
     precision::Int
+    plot_states::String
+    gen_plots::Bool
     verbose::Bool
-    function FlowstarSetting(ts::𝕋, tf, order::𝕆, name, rem_est, precond::ℙ, plot_states, cutoff, precision, verbose) where {𝕋, 𝕆, ℙ}
+    function FlowstarSetting(ts::𝕋, tf, order::𝕆, name, rem_est, precond::ℙ, cutoff, precision, plot_states, verbose; gen_plots = false) where {𝕋, 𝕆, ℙ}
         @assert !(order isa AdaptiveTMOrder && ts isa Interval) "Adaptive time step and adaptive order not supported together. Change to a fixed time step or fixed order"
 
         s = _join_states(plot_states)
-        new{𝕋,𝕆,ℙ}(ts, tf, order, name, rem_est, precond, s, cutoff, precision, verbose)
+        new{𝕋,𝕆,ℙ}(ts, tf, order, name, rem_est, precond, cutoff, precision, s, gen_plots, verbose)
     end
 end
 
 function FlowstarSetting(ts, tf, order, plot_states; name = "flowstar", rem_est = 1e-4, precond = QRPreconditioner(),
-            cutoff = 1e-20, precision = 53, verbose = true)
-    FlowstarSetting(ts, tf, order, name, rem_est, precond, plot_states, cutoff, precision, verbose)
+            cutoff = 1e-20, precision = 53, verbose = true, kwargs...)
+    FlowstarSetting(ts, tf, order, name, rem_est, precond, cutoff, precision, plot_states, verbose; kwargs...)
 end
 
 ## Models
@@ -114,7 +115,7 @@ _rem_string(rem::Real) = "remainder estimation $(rem)"
 _plot_string(vars) = "gnuplot interval $vars"
 _cutoff_string(c::Real) = "cutoff $c"
 _precision_string(p::Int) = "precision $p"
-_output_string(s::String) = "output $s"
+_output_string(s::String, gen_plots::Bool) = gen_plots ? "output $s" : "tm output $s"
 _print_string(b::Bool) = "print $(b ? "on" : "off")"
 _state_string(s) = "state var $(join(s, ", "))"
 _eom_string(s) = string(s)
@@ -131,7 +132,7 @@ function _setting_string(fs::FlowstarSetting)
         $(_order_string(fs.order))
         $(_cutoff_string(fs.cutoff))
         $(_precision_string(fs.precision))
-        $(_output_string(fs.name))
+        $(_output_string(fs.name, fs.gen_plots))
         $(_print_string(fs.verbose))
      }"""
 end

@@ -6,7 +6,9 @@ import Flowstar_jll: flowstar
 import TaylorModels: flowpipe, domain
 import Base: parse
 
+include("model.jl")
 include("string_utils.jl")
+
 
 function flowstar(model; outdir = mktempdir())
     output_name = _match_between(String(read(model)), "output ")*".flow"
@@ -122,5 +124,6 @@ function _valid_file(s)
     @assert occursin("continuous flowpipes", s) "Currently only continuous flowpipe solutions are supported"
 end
 
-export flowstar,  FlowstarContinuousSolution, states, nstates, order, cutoff, flowpipe, domain
+export flowstar
+export FlowstarContinuousSolution, states, nstates, order, cutoff, flowpipe, domain
 end

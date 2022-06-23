@@ -69,7 +69,7 @@ end
 function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
     nvars = length(vars)
     nvars_t = nvars + 1
-    
+
     # TypePolynomial symbols
     ξ = eval(:(@polyvar ξ[1:$nvars_t]))
 
@@ -80,8 +80,8 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
     map(body) do b
         _tm, _dom = _cleantm(b, lvars)
         dom = eval(Meta.parse(_dom))
-        states = _split_states(_tm)
-        
+        states = split(_tm, ";", keepempty = false)
+    
         polrem = map(states) do state
             pol, rem = _split_poly_rem(state)
             rem = eval(Meta.parse(rem))
@@ -107,7 +107,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
     map(body) do b
         _tm, _dom = _cleantm(b, lvars)
         dom = eval(Meta.parse(_dom))
-        states = _split_states(_tm)
+        states = split(_tm,";", keepempty = false)
         
         polrem = map(states) do state
              pol, rem = _split_poly_rem(state)

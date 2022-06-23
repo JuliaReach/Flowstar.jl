@@ -30,9 +30,9 @@ struct FlowstarContinuousSolution{𝕋}
     flow::Vector{Vector{𝕋}}
 end
 
-function FlowstarContinuousSolution(model, tm1 = Val(true))
-    flowstr = flowstar(model)
-    parse(FlowstarContinuousSolution, flowstr, tm1)
+function FlowstarContinuousSolution(model, tm1 = Val(true); kwargs...)
+    flowstr = flowstar(model; kwargs...)
+    parse(FlowstarContinuousSolution, flowstr, tm1;)
 end
 
 states(fs::FlowstarContinuousSolution) = fs.states
@@ -42,7 +42,7 @@ cutoff(fs::FlowstarContinuousSolution) = fs.cutoff
 flowpipe(fs::FlowstarContinuousSolution) = fs.flow
 domain(fs::FlowstarContinuousSolution) = domain(flowpipe(fs)[1][1])
 
-function parse(::Type{FlowstarContinuousSolution}, str, tm1 = Val(true); kwargs...)
+function parse(::Type{FlowstarContinuousSolution}, str, tm1 = Val(true))
     _valid_file(str)
     head_str, local_str, body_str = split(str, "{", limit = 3)
 

@@ -21,5 +21,3 @@ fcs = FlowstarContinuousSolution(crm)
 domain(fcs)
 
 rs = flowpipe(fcs)
-
-

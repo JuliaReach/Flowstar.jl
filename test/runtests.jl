@@ -1,5 +1,15 @@
 using Flowstar
 using Test, IntervalArithmetic
+import Base.≈
+
+≈(a::Interval, b::Interval) = inf(a) ≈ inf(b) && sup(a) ≈ sup(b)
+function ≈(a::IntervalBox, b::IntervalBox) 
+    dims = map(a,b) do _a, _b
+        _a ≈ _b
+    end
+    all(dims)
+end
+
 
 model = joinpath(abspath("models"), "Lotka_Volterra.model")
 S = flowstar(model; outdir = pwd())
@@ -14,15 +24,17 @@ end
 
 @testset "TaylorModelN vs TaylorModel1{TaylorN} parsing" begin
     fcs_tmN = FlowstarContinuousSolution(model, Val(false))
-    eval_pt = mid(domain(fcs_tmN))
+    @test length(flowpipe(fcs_tmN)[end]) == 2   # test num vars
+    @test all(domain(fcs_tmN) .≈ Ref(IntervalBox(0..0.02, -1..1, -1..1))) # test domain
 
+    eval_pt = mid(first(domain(fcs_tmN)))
     tmN = flowpipe(fcs_tmN)[end][1](eval_pt)
-    @test length(flowpipe(fcs_tmN)[end]) == 2
-
+   
     fcs_tm1 = FlowstarContinuousSolution(model, Val(true))
-    tm1 = flowpipe(fcs_tm1)[end][1](eval_pt[1])(eval_pt[2:end])
-    @test length(flowpipe(fcs_tm1)[end]) == 2
+    @test length(flowpipe(fcs_tm1)[end]) == 2 # test num vars
+    @test all(domain(fcs_tm1) .≈ 0..0.02) # test domain
 
+    tm1 = flowpipe(fcs_tm1)[end][1](eval_pt[1])(eval_pt[2:end])
     @test tmN == tm1
 end
 
@@ -51,5 +63,4 @@ end
             end
         end
     end
-
 end

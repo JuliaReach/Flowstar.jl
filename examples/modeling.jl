@@ -18,6 +18,6 @@ crm = ContinuousReachModel(states, params, lv_sett, PolyODEScheme2(), eom, Inter
 print(string(crm))
 
 fcs = FlowstarContinuousSolution(crm)
+domain(fcs)
 
-rs = flowpipe(fcs)[end][1]
-f = rs(mid(domain(rs)))
+rs = flowpipe(fcs)

@@ -40,7 +40,7 @@ nstates(fs::FlowstarContinuousSolution) = length(states(fs))
 order(fs::FlowstarContinuousSolution) = fs.order
 cutoff(fs::FlowstarContinuousSolution) = fs.cutoff
 flowpipe(fs::FlowstarContinuousSolution) = fs.flow
-domain(fs::FlowstarContinuousSolution) = domain(flowpipe(fs)[1][1])
+domain(fs::FlowstarContinuousSolution) = domain.(first.(flowpipe(fs)))
 
 function parse(::Type{FlowstarContinuousSolution}, str, tm1 = Val(true))
     _valid_file(str)

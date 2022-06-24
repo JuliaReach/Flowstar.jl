@@ -57,6 +57,7 @@ end
                         flowstar(crm; outdir=pwd())
                         fp = joinpath(pwd(), "outputs","$(crm.setting.name)"*".flow")
                         @test isfile(fp)
+                        @test_throws AssertionError FlowstarContinuousSolution(crm)
                         rm(fp)
                     end
                 end

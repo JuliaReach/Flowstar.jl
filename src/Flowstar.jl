@@ -44,7 +44,9 @@ domain(fs::FlowstarContinuousSolution) = domain.(first.(flowpipe(fs)))
 
 function parse(::Type{FlowstarContinuousSolution}, str, tm1 = Val(true))
     _valid_file(str)
-    head_str, local_str, body_str = split(str, "{", limit = 3)
+    split_str = split(str, "{", limit = 3)
+    @assert length(split_str) == 3 "0 flowpipe(s) computed. Please try smaller step sizes or larger Taylor model orders"
+    head_str, local_str, body_str = split_str
 
     vars, order, cutoff, output = _parse_header(head_str)
     local_vars = _parse_locals(local_str)

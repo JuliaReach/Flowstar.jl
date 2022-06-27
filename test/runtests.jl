@@ -1,5 +1,5 @@
 using Flowstar
-using Test, IntervalArithmetic
+using Test, IntervalArithmetic, TaylorModels
 import Base.≈
 
 ≈(a::Interval, b::Interval) = inf(a) ≈ inf(b) && sup(a) ≈ sup(b)
@@ -108,4 +108,14 @@ end
         sett = FlowstarSetting(0.1, 5.0, FixedTMOrder(5), "x,y"; verbose = false)
         crm = ContinuousReachModel("x, y", nothing, sett, PolyODEScheme3(), " x' = 1.5*x - x*y\n y' = -3*y + x*y", IntervalBox(-1..1, -0.5..0.5))
         @test_throws AssertionError FlowstarContinuousSolution(crm)
+end
+
+@testset "Time Independeny Flowpipe Solution" begin
+    model = joinpath(abspath("models"), "t_independent_flowpipe.model")
+    
+    fcs = FlowstarContinuousSolution(model, Val(true); outdir = pwd())
+    @test flowpipe(fcs)[1][2] isa TaylorModel1{TaylorSeries.TaylorN{Interval{Float64}}, Float64}
+
+    fcs = FlowstarContinuousSolution(model, Val(false); outdir = pwd())
+    @test flowpipe(fcs)[1][2] isa TaylorModelN{3, Interval{Float64}, Float64}
 end

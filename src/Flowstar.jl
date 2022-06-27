@@ -95,7 +95,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
         polrem = map(states) do state
             pol, rem = _split_poly_rem(state)
             rem = eval(Meta.parse(rem))
-            pol =  eval(Meta.parse(pol))
+            pol =  eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append polynomial term with zero coefficient to ensure is a polynomial type
             coeffs = map(0:order) do n 
                 coeff = TypedPolynomials.coefficient(pol, ξ[1]^n, [ξ[1]])
                 coeff(ξ[1]=>0.0, ξ[2:end] => ξtm)  # coeff is independent of ξ[1], but required for type conversion
@@ -121,7 +121,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
         
         polrem = map(states) do state
              pol, rem = _split_poly_rem(state)
-             pol = eval(Meta.parse(pol))
+             pol = eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append TaylorModel term with zero coefficient to ensure is a TaylorModel type
              rem = eval(Meta.parse(rem))
 
              TaylorModelN(pol, rem, IntervalBox(zeros(nvars)), dom)

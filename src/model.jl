@@ -15,9 +15,17 @@ struct FixedTMOrder <: AbstractTMOrder
     order::Int
 end
 
-struct AdaptiveTMOrder <: AbstractTMOrder
-    min::Int
-    max::Int
+struct AdaptiveTMOrder{𝕋} <: AbstractTMOrder
+    min::𝕋
+    max::𝕋
+end
+
+function AdaptiveTMOrder(o)
+    vars = first.(o)
+    ranges = last.(o)
+    mns = vars .=> first.(ranges)
+    mxs = vars .=> last.(ranges)
+    AdaptiveTMOrder(mns, mxs)
 end
 
 min(o::FixedTMOrder) = o.order
@@ -26,7 +34,20 @@ max(o::FixedTMOrder) = o.order
 max(o::AdaptiveTMOrder) = o.max
 
 _order_string(o::FixedTMOrder) = "fixed orders $(min(o))"
-_order_string(o::AdaptiveTMOrder) = "adaptive orders { min $(min(o)) , max $(max(o)) }"
+_order_string(o::AdaptiveTMOrder{Int}) = "adaptive orders { min $(min(o)) , max $(max(o)) }"
+function _order_string(o::AdaptiveTMOrder)
+    min_strs = map(min(o)) do m
+        "$(first(m)) :$(last(m))"
+    end
+    min_str = join(min_strs, " , ")
+
+    max_strs = map(max(o)) do m
+        "$(first(m)) :$(last(m))"
+    end
+    max_str = join(max_strs, " , ")
+
+    "adaptive orders { min {$min_str} , max {$max_str}}"
+end
 
 ## Scheme
 abstract type AbstractODEScheme end
@@ -157,7 +178,6 @@ _join_states(s) = join(s, ",")
 
 # todo: move to flowstar.jl after rebase
 function flowstar(m::AbstractFlowstarModel; outdir = mktempdir())
-    @show outdir
     fp = joinpath(outdir, "$(m.setting.name).model")
     open(fp,"w") do f
         print(f, string(m))

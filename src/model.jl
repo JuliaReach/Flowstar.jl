@@ -178,7 +178,6 @@ _join_states(s) = join(s, ",")
 
 # todo: move to flowstar.jl after rebase
 function flowstar(m::AbstractFlowstarModel; outdir = mktempdir())
-    @show outdir
     fp = joinpath(outdir, "$(m.setting.name).model")
     open(fp,"w") do f
         print(f, string(m))

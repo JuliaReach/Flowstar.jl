@@ -20,6 +20,14 @@ struct AdaptiveTMOrder{𝕋} <: AbstractTMOrder
     max::𝕋
 end
 
+function AdaptiveTMOrder(o)
+    vars = first.(o)
+    ranges = last.(o)
+    mns = vars .=> first.(ranges)
+    mxs = vars .=> last.(ranges)
+    AdaptiveTMOrder(mns, mxs)
+end
+
 min(o::FixedTMOrder) = o.order
 min(o::AdaptiveTMOrder) = o.min
 max(o::FixedTMOrder) = o.order
@@ -27,6 +35,19 @@ max(o::AdaptiveTMOrder) = o.max
 
 _order_string(o::FixedTMOrder) = "fixed orders $(min(o))"
 _order_string(o::AdaptiveTMOrder{Int}) = "adaptive orders { min $(min(o)) , max $(max(o)) }"
+function _order_string(o::AdaptiveTMOrder)
+    min_strs = map(min(o)) do m
+        "$(first(m)) :$(last(m))"
+    end
+    min_str = join(min_strs, " , ")
+
+    max_strs = map(max(o)) do m
+        "$(first(m)) :$(last(m))"
+    end
+    max_str = join(max_strs, " , ")
+
+    "adaptive orders { min {$min_str} , max {$max_str}}"
+end
 
 ## Scheme
 abstract type AbstractODEScheme end

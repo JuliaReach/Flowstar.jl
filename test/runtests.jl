@@ -40,7 +40,7 @@ end
 
 @testset "Model Writing" begin
     for ts in (0.1, 0.1..0.2)
-        for o in (FixedTMOrder(5), AdaptiveTMOrder(2,5))
+        for o in (FixedTMOrder(5), AdaptiveTMOrder(2,5), AdaptiveTMOrder(("x"=>(1,2), "y"=>(2,3))))
             for p in ( IdentityPreconditioner(), QRPreconditioner())
                 for scheme in (PolyODEScheme1(), PolyODEScheme2(), PolyODEScheme3(), NonPolyODEScheme(), LinearODEScheme(false))
                     if ts isa Interval && o isa AdaptiveTMOrder
@@ -57,11 +57,16 @@ end
                         flowstar(crm; outdir=pwd())
                         fp = joinpath(pwd(), "outputs","$(crm.setting.name)"*".flow")
                         @test isfile(fp)
-                        @test_throws AssertionError FlowstarContinuousSolution(crm)
                         rm(fp)
                     end
                 end
             end
         end
     end
+end
+
+@testset "Zero Flowpipes" begin
+        sett = FlowstarSetting(0.1, 5.0, FixedTMOrder(5), "x,y"; verbose = false)
+        crm = ContinuousReachModel("x, y", nothing, sett, PolyODEScheme3(), " x' = 1.5*x - x*y\n y' = -3*y + x*y", IntervalBox(-1..1, -0.5..0.5))
+        @test_throws AssertionError FlowstarContinuousSolution(crm)
 end

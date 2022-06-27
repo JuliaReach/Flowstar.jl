@@ -1,0 +1,30 @@
+continuous reachability
+{
+    state var x, y
+    
+    setting
+{
+   adaptive steps { min 0.009999999999999998 , max 0.5 }
+   time 3.0
+   remainder estimation 0.0001
+   QR precondition
+   gnuplot interval x,y
+   fixed orders 15
+   cutoff 1.0e-20
+   precision 53
+   tm output t_independent
+   print off
+}
+    poly ode 3
+    {
+         x' = x - x^3
+ y' = 0.0
+    }
+
+    init
+{
+x in [0.0999999, 0.900001]
+y in [0, 0]
+}
+
+}

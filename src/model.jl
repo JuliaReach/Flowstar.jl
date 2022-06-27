@@ -176,16 +176,6 @@ _split_states(s) = s
 _join_states(s::String) = s
 _join_states(s) = join(s, ",")
 
-# todo: move to flowstar.jl after rebase
-function flowstar(m::AbstractFlowstarModel; outdir = mktempdir())
-    fp = joinpath(outdir, "$(m.setting.name).model")
-    open(fp,"w") do f
-        print(f, string(m))
-    end
-    flowstar(fp; outdir)
-end
-
-
 export FlowstarSetting
 export ContinuousReachModel
 export FixedTimeStep, AdaptiveTimeStep

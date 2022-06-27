@@ -22,6 +22,14 @@ function flowstar(model; outdir = mktempdir())
     String(read(flow))
 end
 
+function flowstar(m::AbstractFlowstarModel; outdir = mktempdir())
+    fp = joinpath(outdir, "$(m.setting.name).model")
+    open(fp,"w") do f
+        print(f, string(m))
+    end
+    flowstar(fp; outdir)
+end
+
 struct FlowstarContinuousSolution{𝕋}
     states::Vector{String}
     order::Int

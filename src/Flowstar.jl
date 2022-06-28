@@ -1,6 +1,6 @@
 module Flowstar
 
-using Flowstar_jll, TaylorModels, TypedPolynomials
+using Flowstar_jll, TaylorModels, TypedPolynomials, ProgressLogging
 
 import Flowstar_jll: flowstar
 import TaylorModels: flowpipe, domain
@@ -87,20 +87,26 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
     ξtm = eval(:(set_variables($(join(vars, " ")); order= $order, numvars = $nvars)))
 
     body = split(str, "{")
-    map(body) do b
-        _tm, _dom = _cleantm(b, lvars)
-        dom = eval(Meta.parse(_dom))
-        states = split(_tm, ";", keepempty = false)
-    
-        polrem = map(states) do state
-            pol, rem = _split_poly_rem(state)
-            rem = eval(Meta.parse(rem))
-            pol =  eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append polynomial term with zero coefficient to ensure is a polynomial type
-            coeffs = map(0:order) do n 
-                coeff = TypedPolynomials.coefficient(pol, ξ[1]^n, [ξ[1]])
-                coeff(ξ[1]=>0.0, ξ[2:end] => ξtm)  # coeff is independent of ξ[1], but required for type conversion
+    @withprogress name="Parsing Flowpipes" begin
+        lb = length(body)
+        map(enumerate(body)) do (i, b)
+            _tm, _dom = _cleantm(b, lvars)
+            dom = eval(Meta.parse(_dom))
+            states = split(_tm, ";", keepempty = false)
+        
+            tm = map(states) do state
+                pol, rem = _split_poly_rem(state)
+                rem = eval(Meta.parse(rem))
+                pol =  eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append polynomial term with zero coefficient to ensure is a polynomial type
+                coeffs = map(0:order) do n 
+                    coeff = TypedPolynomials.coefficient(pol, ξ[1]^n, [ξ[1]])
+                    coeff(ξ[1]=>0.0, ξ[2:end] => ξtm)  # coeff is independent of ξ[1], but required for type conversion
+                end
+                TaylorModel1(Taylor1(coeffs), rem, 0.0..0.0, dom[1])
             end
-            TaylorModel1(Taylor1(coeffs), rem, 0.0..0.0, dom[1])
+            @logprogress i/lb
+
+            tm
         end
     end
 end
@@ -113,18 +119,23 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
     ξ = eval(:(ξ = set_variables($names; order= $order, numvars = $nvars)))
 
     body = split(str, "{")
+    @withprogress name="Parsing Flowpipes" begin
+        lb = length(body)
+        map(enumerate(body)) do (i, b)
+            _tm, _dom = _cleantm(b, lvars)
+            dom = eval(Meta.parse(_dom))
+            states = split(_tm,";", keepempty = false)
+            
+            tm = map(states) do state
+                pol, rem = _split_poly_rem(state)
+                pol = eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append TaylorModel term with zero coefficient to ensure is a TaylorModel type
+                rem = eval(Meta.parse(rem))
 
-    map(body) do b
-        _tm, _dom = _cleantm(b, lvars)
-        dom = eval(Meta.parse(_dom))
-        states = split(_tm,";", keepempty = false)
-        
-        polrem = map(states) do state
-             pol, rem = _split_poly_rem(state)
-             pol = eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append TaylorModel term with zero coefficient to ensure is a TaylorModel type
-             rem = eval(Meta.parse(rem))
+                TaylorModelN(pol, rem, IntervalBox(zeros(nvars)), dom)
+            end
+            @logprogress i/lb
 
-             TaylorModelN(pol, rem, IntervalBox(zeros(nvars)), dom)
+            tm
         end
     end
 end

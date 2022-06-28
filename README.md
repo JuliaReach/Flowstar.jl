@@ -26,4 +26,4 @@ fcs = FlowstarContinuousSolution(model)
 See examples/parsing.jl for additional usage.
 
 ## Modeling
-Instead of specifying a model file direction, you can create one programatically as shown in examples/modeling.jl
+Instead of specifying a model file directly, you can create one programatically as shown in examples/modeling.jl

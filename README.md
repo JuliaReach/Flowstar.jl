@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/agerlach/Flowstar.jl/workflows/CI/badge.svg)](https://github.com/agerlach/Flowstar.jl/actions?query=workflow%3ACI)
 
-This package is a wrapper to [Flow*](flowstar.org), a verification tool for cyber-physical systems. Currently only continuous reachability is supported.
+This package is a wrapper to [Flow*](https://flowstar.org), a verification tool for cyber-physical systems. Currently only continuous reachability is supported.
 
 ## Direct Usage
 
@@ -26,4 +26,4 @@ fcs = FlowstarContinuousSolution(model)
 See examples/parsing.jl for additional usage.
 
 ## Modeling
-Instead of specifying a model file directly, you can create one programatically as shown in examples/modeling.jl
+Instead of specifying a model file directly, you can create one programatically as shown in [examples/modeling.jl](examples/modeling.jl).

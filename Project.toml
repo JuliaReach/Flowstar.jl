@@ -1,7 +1,7 @@
 name = "Flowstar"
 uuid = "a8054ddd-9dca-4d20-8ffe-ae96ec1541f1"
 authors = ["Adam R. Gerlach and Contributors"]
-version = "0.2.5"
+version = "0.2.6"
 
 [deps]
 Flowstar_jll = "857d554b-2109-5851-8b71-fc429cd15c15"

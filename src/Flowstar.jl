@@ -1,6 +1,7 @@
 module Flowstar
 
 using Flowstar_jll, TaylorModels, TypedPolynomials, ProgressLogging
+TaylorModels.setdisplay(; decorations = false)  # deactivate fancy printing of intervals
 
 import Flowstar_jll: flowstar
 import TaylorModels: flowpipe, domain
@@ -18,7 +19,7 @@ function flowstar(model; outdir = mktempdir())
 
     @info "Flow* intermediate files saved to $outdir"
     flow = joinpath(outdir, "outputs", output_name)
-    
+
     String(read(flow))
 end
 
@@ -58,7 +59,7 @@ function parse(::Type{FlowstarContinuousSolution}, str, tm1 = Val(true))
 
     vars, order, cutoff, output = _parse_header(head_str)
     local_vars = _parse_locals(local_str)
-    
+
     fp = _parse_flowpipe(body_str, order, vars, local_vars, tm1)
     FlowstarContinuousSolution(vars, order, cutoff, output, fp)
 end
@@ -93,12 +94,12 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
             _tm, _dom = _cleantm(b, lvars)
             dom = eval(Meta.parse(_dom))
             states = split(_tm, ";", keepempty = false)
-        
+
             tm = map(states) do state
                 pol, rem = _split_poly_rem(state)
                 rem = eval(Meta.parse(rem))
                 pol =  eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append polynomial term with zero coefficient to ensure is a polynomial type
-                coeffs = map(0:order) do n 
+                coeffs = map(0:order) do n
                     coeff = TypedPolynomials.coefficient(pol, ξ[1]^n, [ξ[1]])
                     coeff(ξ[1]=>0.0, ξ[2:end] => ξtm)  # coeff is independent of ξ[1], but required for type conversion
                 end
@@ -125,13 +126,13 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
             _tm, _dom = _cleantm(b, lvars)
             dom = eval(Meta.parse(_dom))
             states = split(_tm,";", keepempty = false)
-            
+
             tm = map(states) do state
                 pol, rem = _split_poly_rem(state)
                 pol = eval(Meta.parse(pol * "+ Interval(0)*prod(ξ)")) # append TaylorModel term with zero coefficient to ensure is a TaylorModel type
                 rem = eval(Meta.parse(rem))
 
-                TaylorModelN(pol, rem, IntervalBox(zeros(nvars)), dom)
+                TaylorModelN(pol, rem, fill(interval(0), nvars), dom)
             end
             @logprogress i/lb
 

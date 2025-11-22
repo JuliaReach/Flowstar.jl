@@ -1,9 +1,10 @@
 using Flowstar
 using Test, IntervalArithmetic, TaylorModels
 import Base.≈
+TaylorModels.setdisplay(; decorations = false)  # deactivate fancy printing of intervals
 
 ≈(a::Interval, b::Interval) = inf(a) ≈ inf(b) && sup(a) ≈ sup(b)
-function ≈(a::IntervalBox, b::IntervalBox) 
+function ≈(a::AbstractVector{<:Interval}, b::AbstractVector{<:Interval})
     dims = map(a,b) do _a, _b
         _a ≈ _b
     end
@@ -19,32 +20,32 @@ S = flowstar(model; outdir = pwd())
     outfile = joinpath(outdir,"outputs","Lotka_Volterra.flow")
     S = flowstar(model; outdir)
     @test isfile(outfile)
-    @test S == String(read(outfile)) 
+    @test S == String(read(outfile))
 end
 
 @testset "TaylorModelN vs TaylorModel1{TaylorN} parsing" begin
     fcs_tmN = FlowstarContinuousSolution(model, Val(false))
     @test length(flowpipe(fcs_tmN)[end]) == 2   # test num vars
-    @test all(domain(fcs_tmN) .≈ Ref(IntervalBox(0..0.02, -1..1, -1..1))) # test domain
+    @test all(domain(fcs_tmN) .≈ Ref([0..0.02, -1..1, -1..1])) # test domain
 
-    eval_pt = mid(first(domain(fcs_tmN)))
+    eval_pt = mid.(first(domain(fcs_tmN)))
     tmN = flowpipe(fcs_tmN)[end][1](eval_pt)
-   
+
     fcs_tm1 = FlowstarContinuousSolution(model, Val(true))
     @test length(flowpipe(fcs_tm1)[end]) == 2 # test num vars
     @test all(domain(fcs_tm1) .≈ 0..0.02) # test domain
 
     tm1 = flowpipe(fcs_tm1)[end][1](eval_pt[1])(eval_pt[2:end])
-    @test tmN == tm1
+    @test tmN ≈ tm1
 end
 
 @testset "Model Strings" begin
     @test Flowstar._order_string(FixedTMOrder(5)) == "fixed orders 5"
     @test Flowstar._order_string(AdaptiveTMOrder(3,4)) == "adaptive orders { min 3 , max 4 }"
-    @test Flowstar._order_string(AdaptiveTMOrder( ("x"=>2, "y" =>3, "z" => 4), ("x"=>20, "y" =>30, "z" => 40))) == 
+    @test Flowstar._order_string(AdaptiveTMOrder( ("x"=>2, "y" =>3, "z" => 4), ("x"=>20, "y" =>30, "z" => 40))) ==
             Flowstar._order_string(AdaptiveTMOrder( ["x"=>2, "y" =>3, "z" => 4], ["x"=>20, "y" =>30, "z" => 40])) ==
-            Flowstar._order_string(AdaptiveTMOrder( ("x" => (2,20), "y" => (3,30), "z" => (4,40)) )) == 
-            Flowstar._order_string(AdaptiveTMOrder( ["x" => (2,20), "y" => (3,30), "z" => (4,40)] )) == 
+            Flowstar._order_string(AdaptiveTMOrder( ("x" => (2,20), "y" => (3,30), "z" => (4,40)) )) ==
+            Flowstar._order_string(AdaptiveTMOrder( ["x" => (2,20), "y" => (3,30), "z" => (4,40)] )) ==
             Flowstar._order_string(AdaptiveTMOrder( [:x => (2,20), :y => (3,30), :z => (4,40)] ))
             "adaptive orders { min {x :2 , y :3 , z :4} , max {x :20 , y :30 , z :40}}"
 
@@ -66,15 +67,14 @@ end
     @test Flowstar._plot_string("a,b") == "gnuplot interval a,b"
     @test Flowstar._cutoff_string(0.1) == "cutoff 0.1"
     @test Flowstar._output_string("name", true) == "output name"
-    @test Flowstar._output_string("name", false) == "tm output name" 
+    @test Flowstar._output_string("name", false) == "tm output name"
     @test Flowstar._print_string(true) == "print on"
     @test Flowstar._print_string(false) == "print off"
     @test Flowstar._state_string(("x", "y", "z")) == "state var x, y, z"
     @test Flowstar._eom_string("x'=x\n y'=3") == "x'=x\n y'=3"
     @test Flowstar._param_string(nothing) == ""
 
-    @test Flowstar._init_string(("x", "y"), IntervalBox(0.0..1.0, -0.2..(-0.1))) == "init\n{\nx in [0, 1]\ny in [-0.200001, -0.0999999]\n}\n"
- 
+    @test Flowstar._init_string(("x", "y"), [0.0..1.0, -0.2..(-0.1)]) == "init\n{\nx in [0.0, 1.0]\ny in [-0.2, -0.1]\n}\n"
 end
 
 @testset "Model Writing" begin
@@ -91,7 +91,7 @@ end
                             eom = " x' = 1.5*x - x*y\n y' = -3*y + x*y"
                         end
                         sett = FlowstarSetting(ts, 5.0, o, "x,y"; verbose = false, precond = p)
-                        crm = ContinuousReachModel("x, y", nothing, sett, scheme, eom, IntervalBox(-1..1, -0.5..0.5))
+                        crm = ContinuousReachModel("x, y", nothing, sett, scheme, eom, [-1..1, -0.5..0.5])
                         @info sett.time_step, sett.order, sett.precond, crm.scheme
                         flowstar(crm; outdir=pwd())
                         fp = joinpath(pwd(), "outputs","$(crm.setting.name)"*".flow")
@@ -106,13 +106,13 @@ end
 
 @testset "Zero Flowpipes" begin
         sett = FlowstarSetting(0.1, 5.0, FixedTMOrder(5), "x,y"; verbose = false)
-        crm = ContinuousReachModel("x, y", nothing, sett, PolyODEScheme3(), " x' = 1.5*x - x*y\n y' = -3*y + x*y", IntervalBox(-1..1, -0.5..0.5))
+        crm = ContinuousReachModel("x, y", nothing, sett, PolyODEScheme3(), " x' = 1.5*x - x*y\n y' = -3*y + x*y", [-1..1, -0.5..0.5])
         @test_throws AssertionError FlowstarContinuousSolution(crm)
 end
 
 @testset "Time Independeny Flowpipe Solution" begin
     model = joinpath(abspath("models"), "t_independent_flowpipe.model")
-    
+
     fcs = FlowstarContinuousSolution(model, Val(true); outdir = pwd())
     @test flowpipe(fcs)[1][2] isa TaylorModel1{TaylorSeries.TaylorN{Interval{Float64}}, Float64}
 

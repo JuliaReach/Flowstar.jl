@@ -99,17 +99,17 @@ end
 
 abstract type AbstractFlowstarModel end
 
-struct ContinuousReachModel{𝕊, ℙ, 𝔼<:FlowstarSetting, ℂ<:AbstractODEScheme,ℕ, 𝔽} <: AbstractFlowstarModel
+struct ContinuousReachModel{𝕊, ℙ, 𝔼<:FlowstarSetting, ℂ<:AbstractODEScheme, 𝔽} <: AbstractFlowstarModel
     states::𝕊
     params::ℙ
     setting::𝔼
     scheme::ℂ
     eom::String
-    dom::IntervalBox{ℕ,𝔽}
+    dom::Vector{Interval{𝔽}}
 
-    function ContinuousReachModel(states, p::ℙ, sett::𝔼, scheme::ℂ, eom, dom::IntervalBox{ℕ,𝔽}) where {ℙ, 𝔼, ℂ, ℕ, 𝔽}
+    function ContinuousReachModel(states, p::ℙ, sett::𝔼, scheme::ℂ, eom, dom::Vector{Interval{𝔽}}) where {ℙ, 𝔼, ℂ, 𝔽}
         s = _split_states(states)
-        new{typeof(s),ℙ, 𝔼, ℂ, ℕ, 𝔽}(s, p, sett, scheme, eom, dom)
+        new{typeof(s),ℙ, 𝔼, ℂ, 𝔽}(s, p, sett, scheme, eom, dom)
     end
 end
 

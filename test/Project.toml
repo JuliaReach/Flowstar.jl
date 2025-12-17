@@ -2,3 +2,6 @@
 IntervalArithmetic = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
 TaylorModels = "314ce334-5f6e-57ae-acf6-00b6e903104a"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+IntervalArithmetic = "1"

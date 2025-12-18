@@ -1,7 +1,7 @@
 name = "Flowstar"
 uuid = "a8054ddd-9dca-4d20-8ffe-ae96ec1541f1"
 authors = ["Adam R. Gerlach and Contributors"]
-version = "0.2.7"
+version = "0.3.0"
 
 [deps]
 Flowstar_jll = "857d554b-2109-5851-8b71-fc429cd15c15"
@@ -12,6 +12,6 @@ TypedPolynomials = "afbbf031-7a57-5f58-a1b9-b774a0fad08d"
 [compat]
 Flowstar_jll = "2"
 ProgressLogging = "0.1"
-TaylorModels = "0.6 - 0.8"
+TaylorModels = "0.9"
 TypedPolynomials = "0.3 - 0.4"
-julia = "1.6"
+julia = "1.10"

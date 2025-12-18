@@ -31,8 +31,8 @@ function _cleantm(str, lvars)
         dom_str = replace(dom_str, r"\R"=>"")
         dom_str = replace(dom_str, "$lv in" =>",")
     end
-    dom_str = replace(dom_str, "$(lvars[1]) in" => "IntervalBox(")
-    dom_str = dom_str*")"
+    dom_str = replace(dom_str, "$(lvars[1]) in" => "[")
+    dom_str = dom_str * "]"
 
     tm_str, dom_str
 end

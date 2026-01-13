@@ -11,13 +11,13 @@ function ≈(a::AbstractVector{<:Interval}, b::AbstractVector{<:Interval})
     all(dims)
 end
 
-
-model = joinpath(abspath("models"), "Lotka_Volterra.model")
-S = flowstar(model; outdir = pwd())
+const path = @__DIR__
+model = joinpath(path, "models", "Lotka_Volterra.model")
+S = flowstar(model; outdir = path)
 
 @testset "Flow* Call" begin
     outdir = mktempdir(;cleanup = false)
-    outfile = joinpath(outdir,"outputs","Lotka_Volterra.flow")
+    outfile = joinpath(outdir, "outputs", "Lotka_Volterra.flow")
     S = flowstar(model; outdir)
     @test isfile(outfile)
     @test S == String(read(outfile))
@@ -93,8 +93,8 @@ end
                         sett = FlowstarSetting(ts, 5.0, o, "x,y"; verbose = false, precond = p)
                         crm = ContinuousReachModel("x, y", nothing, sett, scheme, eom, [-1..1, -0.5..0.5])
                         @info sett.time_step, sett.order, sett.precond, crm.scheme
-                        flowstar(crm; outdir=pwd())
-                        fp = joinpath(pwd(), "outputs","$(crm.setting.name)"*".flow")
+                        flowstar(crm; outdir=path)
+                        fp = joinpath(path, "outputs","$(crm.setting.name)"*".flow")
                         @test isfile(fp)
                         rm(fp)
                     end
@@ -111,11 +111,11 @@ end
 end
 
 @testset "Time Independeny Flowpipe Solution" begin
-    model = joinpath(abspath("models"), "t_independent_flowpipe.model")
+    model = joinpath(path, "models", "t_independent_flowpipe.model")
 
-    fcs = FlowstarContinuousSolution(model, Val(true); outdir = pwd())
+    fcs = FlowstarContinuousSolution(model, Val(true); outdir = path)
     @test flowpipe(fcs)[1][2] isa TaylorModel1{TaylorSeries.TaylorN{Interval{Float64}}, Float64}
 
-    fcs = FlowstarContinuousSolution(model, Val(false); outdir = pwd())
+    fcs = FlowstarContinuousSolution(model, Val(false); outdir = path)
     @test flowpipe(fcs)[1][2] isa TaylorModelN{3, Interval{Float64}, Float64}
 end

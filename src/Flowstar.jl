@@ -4,7 +4,10 @@ using Flowstar_jll, TaylorModels, TypedPolynomials, ProgressLogging
 TaylorModels.setdisplay(; decorations = false)  # deactivate fancy printing of intervals
 
 import Flowstar_jll: flowstar
-import TaylorModels: flowpipe, domain
+import TaylorModels: domain
+if isdefined(TaylorModels, :flowpipe)
+    import TaylorModels: flowpipe  # was removed in TaylorModels v0.10.0
+end
 import Base: parse
 
 include("model.jl")

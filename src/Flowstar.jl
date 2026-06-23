@@ -85,7 +85,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
     ξ = eval(:(@polyvar ξ[1:$nvars_t]))
 
     # TaylorN symbols
-    ξtm = eval(:(variables!($(join(vars, " ")); order= $order, numvars = $nvars)))
+    ξtm = eval(:(variables!($(join(vars, " ")); order= $order, numvars = $nvars, nowarn=true)))
 
     body = split(str, "{")
     @withprogress name="Parsing Flowpipes" begin
@@ -117,7 +117,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
     names = join(tstates, " ")
 
     nvars = length(vars) + 1
-    ξ = eval(:(ξ = variables!($names; order= $order, numvars = $nvars)))
+    ξ = eval(:(ξ = variables!($names; order= $order, numvars = $nvars, nowarn=true)))
 
     body = split(str, "{")
     @withprogress name="Parsing Flowpipes" begin

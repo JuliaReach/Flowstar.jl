@@ -5,9 +5,6 @@ TaylorModels.setdisplay(; decorations = false)  # deactivate fancy printing of i
 
 import Flowstar_jll: flowstar
 import TaylorModels: domain
-if isdefined(TaylorModels, :flowpipe)
-    import TaylorModels: flowpipe  # was removed in TaylorModels v0.10.0
-end
 import Base: parse
 
 include("model.jl")
@@ -88,7 +85,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{true})
     ξ = eval(:(@polyvar ξ[1:$nvars_t]))
 
     # TaylorN symbols
-    ξtm = eval(:(set_variables($(join(vars, " ")); order= $order, numvars = $nvars)))
+    ξtm = eval(:(variables!($(join(vars, " ")); order= $order, numvars = $nvars)))
 
     body = split(str, "{")
     @withprogress name="Parsing Flowpipes" begin
@@ -120,7 +117,7 @@ function _parse_flowpipe(str, order, vars, lvars, ::Val{false})
     names = join(tstates, " ")
 
     nvars = length(vars) + 1
-    ξ = eval(:(ξ = set_variables($names; order= $order, numvars = $nvars)))
+    ξ = eval(:(ξ = variables!($names; order= $order, numvars = $nvars)))
 
     body = split(str, "{")
     @withprogress name="Parsing Flowpipes" begin
